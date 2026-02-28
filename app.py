@@ -11,8 +11,10 @@ import re
 import pandas as pd
 import pdfplumber
 import streamlit as st
-import syllapy
+import pyphen
 import textstat
+
+_PH = pyphen.Pyphen(lang="en_US")
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Constants
@@ -40,14 +42,16 @@ def extract_pdf_text(file) -> str:
 
 
 def count_syllables(word: str) -> int:
-    """Count syllables using syllapy, falling back to a vowel-group heuristic."""
+    """Count syllables using pyphen, falling back to a vowel-group heuristic."""
     clean = re.sub(r"[^a-zA-Z]", "", word).lower()
     if not clean:
         return 0
-    n = syllapy.count(clean)
-    if n:
-        return n
-    # Vowel-group fallback for unknown words
+    try:
+        hyphenated = _PH.inserted(clean)
+        return max(1, hyphenated.count("-") + 1)
+    except Exception:
+        pass
+    # Vowel-group fallback
     cnt, prev_vowel = 0, False
     for ch in clean:
         is_vowel = ch in "aeiouy"
