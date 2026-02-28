@@ -1,5 +1,5 @@
 streamlit
 pdfplumber
 textstat
-syllapy
+pyphen
 pandas
